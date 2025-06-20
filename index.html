@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Word to PDF Converter</title>
+</head>
+<body>
+    <h2>Convert Word (.docx) to PDF</h2>
+    <input type="file" id="uploadWord" accept=".docx" />
+    <button onclick="convertToPDF()">Convert to PDF</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+        let wordText = "";
+
+        document.getElementById("uploadWord").addEventListener("change", function(event) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const arrayBuffer = reader.result;
+                mammoth.extractRawText({ arrayBuffer: arrayBuffer })
+                    .then(function(result) {
+                        wordText = result.value;
+                        alert("Word file loaded!");
+                    })
+                    .catch(function(err) {
+                        console.error("Mammoth error:", err);
+                    });
+            };
+            reader.readAsArrayBuffer(event.target.files[0]);
+        });
+
+        async function convertToPDF() {
+            if (!wordText) {
+                alert("Please upload a Word file first.");
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const lines = doc.splitTextToSize(wordText, 180);
+            doc.text(lines, 10, 10);
+            doc.save("converted.pdf");
+        }
+    </script>
+</body>
+</html>
